@@ -1,0 +1,189 @@
+%
+% File summer.tex
+%
+% Contact: koller@ling.uni-potsdam.de, yusuke@nii.ac.jp
+%%
+%% Based on the style files for ACL-2013, which were, in turn,
+%% Based on the style files for ACL-2012, which were, in turn,
+%% based on the style files for ACL-2011, which were, in turn, 
+%% based on the style files for ACL-2010, which were, in turn, 
+%% based on the style files for ACL-IJCNLP-2009, which were, in turn,
+%% based on the style files for EACL-2009 and IJCNLP-2008...
+
+%% Based on the style files for EACL 2006 by 
+%%e.agirre@ehu.es or Sergi.Balari@uab.es
+%% and that of ACL 08 by Joakim Nivre and Noah Smith
+
+\documentclass[11pt]{article}
+
+\usepackage{acl2014}
+
+\usepackage{times}
+\usepackage{url}
+\usepackage{latexsym}
+\usepackage{color}
+
+\usepackage{amsmath}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\title{Summer Research Paper}
+
+\author{Will Povell \\
+  Baltimore Polytechnic Institute \\
+  {\tt willipovell@gmail.com} \\\And
+  Matt Post \\
+  Johns Hopkins University \\
+  {\tt post@cs.jhu.edu} \\\And
+  Frank Ferraro \\
+  Johns Hopkins University \\
+  {\tt ferraro@cs.jhu.edu}}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  A review of basic knowledge about the field of computation linguistics and a description of what I've accomplished over the summer.
+\end{abstract}
+
+\section{Introduction}
+
+The field of computational linguistics concerns using computer science, machine learning, statistics and other related fields to analyze and model language. This can be used to solve many problems, from detecting spam to improving human-computer interaction.
+
+\subsection{Natural Language Processing}
+
+\subsubsection{N-grams}
+
+One type of model I studied in depth this summer was the N-gram. N-grams work by assigning a sequence of tokens (words, punctuation, etc.) of length $N$ a probability of occurring based on the number of times that sequence occurs in training data. The probability is equal to
+
+$$ P\left(w_i \vert w_1, w_2, \cdots, w_{i-1} \right) = \frac{ c\left( w_1, w_2, \cdots, w_i \right) }{ c\left( w_1, w_2, \cdots, w_{i-1} \right) } $$
+
+
+where $c \left( w_1, w_2, \cdots, w_i \right)$ returns the number of times the sequence $w_1, w_2, \cdots, w_i$ occurred in the training data. The order of an N-gram model is related to how large $i$ is. If $i$ is 1, you have a 1-gram (a unigram). If $i$ is 2 you have a 2-gram (a bigram), and so on.  So, for example, a bigram probability would be calculated as follows
+
+$$ P\left(w \vert v \right) = \frac{ c\left( v, w \right) }{ c\left( v \right) } $$
+
+An example use of an N-gram model would be when you want to predict the next word in a sequence. If I have the sequence "How are", you could use an N-gram trained on other data to try and predict the next word by iterating over your vocabulary and choosing the highest probability $\argmax\limits_{w \in V} P\left( w \; \vert \; \text{How}, \text{are} \right)$. This could, for example, be "you" where $P\left( \text{you} \; \vert \; \text{How}, \text{are} \right) = 0.7$. In this example, the N-gram is a trigram (2-gram) as it uses 2 tokens of context in calculating probability.
+
+\subsubsection{Smoothing}
+
+Simple N-gram models work as described above, but they can be greatly improved. Higher-order models especially suffer from over-fitting where they become too specialized to the dataset they were trained on, generalizing poorly. Smoothing the N-gram probability distribution can help alleviate this problem by moving probability mass to lessen extremes and prevent counts that are equal to 0.
+
+\paragraph{Additive}
+
+One method of smoothing is called additive smoothing. This method works by adding a certain amount $\alpha$ to every count. Using this type of smoothing, the probability function is calculated as follows
+
+$$ P^*\left(w_i \vert w_1, w_2, \cdots, w_{i-1} \right) = \frac{ c\left( w_1, w_2, \cdots, w_i \right) + \alpha}{ c\left( w_1, w_2, \cdots, w_{i-1} \right) + V\alpha } $$
+
+where $V$ is the length of the vocabulary.
+
+\paragraph{Other Interpolations}
+
+An interesting thing to note about additive smoothing is that it is also just a linear interpolation between a bigram probability distribution and uniform probability distribution and can also be represented (for a bigram model) as follows
+
+$$ P^*\left( w \vert v \right) = \lambda \frac{c\left( v, w \right)}{c\left( v\right)} + \left( 1 - \lambda \right) \frac{1}{V} $$
+
+where $0 < \lambda\left(v, \alpha\right) < 1$. For the full derivation of this, see Appendix A.
+
+Other interpolations can also be used. For example, you can interpolate bigram, unigram, and uniform models as follows
+
+\begin{gather*}
+P\left( w \vert v \right) = \lambda \frac{c \left(v, w\right)}{c \left(v\right)} + \mu \frac{c \left(v\right)}{N} + \theta \frac{1}{V} \\
+\text{where} \\
+\lambda + \mu + \theta = 1 \\
+0 < \lambda, \mu, \theta < 1
+\end{gather*}
+
+The values for $\lambda$, $\mu$, and $\theta$ can be varied to get the optimize results.
+
+\paragraph{Maximum Likelihood Estimator}
+
+When a model is unsmoothed, it is the maximum likelihood estimator (MLE) as it will give the highest probability when run on the data the model was trained. For the full proof of this see Appendix B.
+
+\paragraph{Normalized Log-Likelihood}
+
+Minuscule probabilities are difficult to deal with due to limits on the number of significant digits in floating point point arithmetic. A way to solve this is to get the log of the probabilities. From there, a multiplication of probabilities becomes an addition of the log-probabilities.
+
+This can be used by N-gram models as a way to gauge similarity between text. If you train an N-gram model on a dataset and then "score" another dataset by adding the log-probabilities of every N-gram in the scoring dataset, you get the log-likelihood. The more negative the likelihood is, the more "surprised" your model is by the text. The log-likelihood can be calculated as follows for the bigram
+
+$$ \mathcal{L}\left(\mathcal{H}\right) = \sum\limits_{v, w \in V} N\left(v, w \right) \log P\left(w \vert v \right) $$
+
+This value can be normalized to make comparisons easier, as follows
+
+$$ \mathcal{L}_\mathcal{N}\left(\mathcal{H}\right) = \frac{ \mathcal{L}\left(\mathcal{H}\right) }{T} $$
+
+where $T$ is the number of tokens in the held-out data.
+
+An example usage of this would be to train a model on email spam, and then calculate the log-likelihood of another email. The closer the email's log-likelihood is to zero, the more likely that it is spam.
+
+{\color{red} Maximization of log-likelihood}
+
+\subsubsection{Math}
+
+\paragraph{NLP Distributions and Properties}
+
+{\color{red} Valid probability distributions}
+
+\paragraph{Entropy and Cross-Entropy}
+
+{\color{red} Went over these and I have notes, will probably just need to pull up the wiki page to refresh myself}
+
+\paragraph{Perplexity}
+
+{\color{red} Same as above}
+
+\paragraph{KL Similarity}
+
+{\color{red} Same as above}
+
+\paragraph{XEnt}
+
+{\color{red} I don't believe we went over this. Related to Cross-Entropy}
+
+\paragraph{Lagrange Multipliers}
+
+{\color{red} To add}
+
+\section{Methods \& Results}
+
+\subsection{Python Implementation}
+
+{\color{red} TwitterKov details}
+
+\subsection{Performance Comparisons}
+
+{\color{red} list vs dict vs trie}
+
+\subsection{ACL 2014}
+
+{\color{red} Summary of papers, new things I learned about}
+
+\section{Summary}
+
+\section{Acknowledgements}
+
+
+%\begin{thebibliography}{}
+
+%\end{thebibliography}
+
+\appendix
+\section{Additive Smoothing as a Linear Interpolation}
+
+\begin{align}
+P^*\left(w \vert v \right) &= \frac{c^*\left(v, w\right)}{\sum\limits_{w^` \in V} c^*\left(v, w \right)} \\
+&= \frac{c \left( v, w \right) + \theta}{\sum\limits_{w^` \in V} \left( c\left( v, w \right) + \alpha \right)} \\
+&= \frac{c \left( v, w \right) + \alpha}{c \left( v \right) + V\alpha} \\
+&= \frac{c\left(v, w\right)}{c\left( v \right) + V\alpha} + \frac{\alpha}{c\left( v \right) + V\alpha} \\
+&= \frac{c\left( v\right)}{c\left( v\right) + V\alpha} \frac{c\left(v, w\right)}{c\left( v \right)} + \frac{1}{V} \frac{V\alpha}{c\left( v \right) + V\alpha} \\
+&= \frac{c\left( v\right)}{c\left( v\right) + V\alpha} \frac{c\left(v, w\right)}{c\left( v \right)} + \left( 1 - \frac{c\left( v\right)}{c\left( v\right) + V\alpha} \right) \frac{1}{V} \\
+&= \lambda \frac{c\left(v, w\right)}{c\left( v \right)} + \left(1-\lambda\right) \frac{1}{V}
+\end{align}
+
+\section{Derivation of Maximum Likelihood Estimator}
+
+\textcolor{red}{Insert proof from blog post here}
+
+\end{document}
