@@ -165,15 +165,14 @@ $$ c\left(v\right) = \sum\limits_{w \in V} c\left(v, w\right) $$
 
 \paragraph{Lagrange Multipliers}
 
-The method of Lagrange multipliers is a way to find extrema of a function bounded by equality constraints.
+The method of Lagrange multipliers is a way to find extrema of a function bounded by equality constraints. In formal terms the optimization problem is stated as
 
-\begin{gather*}
-\text{maximize } f\left(x\right) \\
-\text{subject to } g\left(x\right) = c
-\end{gather*}
+maximize $f\left(x\right)$ \\
+subject to $g\left(x\right) = c$
 
 Lagrange multipliers are central to the MLE proof in Appendix B.
 
+$$ \Lambda\left(x, \lambda \right) = f\left(x\right) + \lambda\left(g\left(x\right) - c \right) $$
 
 \paragraph{Entropy and Cross-Entropy}
 
@@ -229,6 +228,173 @@ P^*\left(w \vert v \right) &= \frac{c^*\left(v, w\right)}{\sum\limits_{w^` \in V
 
 \section{Derivation of Maximum Likelihood Estimator}
 
-\textcolor{red}{Insert proof from blog post here}
+Below I have shown the derivations for the Maximum Likelihood Estimators (MLEs) of both unigram and bigram models.
+
+From the derivations below, it can be extrapolated that the MLE of an n-gram model would be
+
+$$\phi_{t_1, t_2, \cdots , t_n} = \frac{c \left( t_1, t_2, \cdots , t_n \right)}{c \left( t_1, t_2, \cdots , t_{n - 1} \right)}$$
+
+\subsection{Unigram}
+Given $n$ tokens
+
+$$ y_0, y_1, y_2, \cdots, y_n $$
+
+With a vocabulary set 
+
+$$ V = \left\{ v_0, v_1, v_2, \cdots v_m \right\} $$
+
+Whose generative story is:
+
+From probability vector $\theta$ draw
+
+$$ y_i \: \lvert \: \theta \stackrel{i.i.d.}{\sim} \text{cat} \left( \theta \right) $$
+
+The maximum likelihood estimator of $\theta$ is the probability distribution $\phi$ that maximizes the log-likelihood of observed data, calculated with
+
+$$ L \left( \phi \right) = \sum \limits_{v \: \in \: V} c \left( v \right) \log{\phi_v} $$
+
+To be derived is that the maximum likelihood estimator is
+
+$$\phi_i = \frac{c \left( i \right)}{n}$$
+
+To do this, you maximize the log-likelihood function, varying $\phi$ (restricted to valid probability distributions). This can be done with the method of Lagrange multipliers.
+
+\begin{align*}
+\max \limits_{\phi} \; L\left( \phi \right) \; \text{s.t.} \; \sum \limits_{v \in V} \phi_{v} = 1 \\
+%
+\Lambda \left( \phi, \lambda \right) = L\left( \phi \right) - \lambda \left( \sum \limits_{v \in V} \phi_{v} - 1 \right)
+\end{align*}
+
+The partial derivative of $\Lambda$ with respect to $\phi_i$ for any type $i$ is
+
+\begin{align*}
+%
+\frac{\partial}{\partial \phi_i} \Lambda &= L^\prime \left( \phi \right) - \frac{\partial}{\partial \phi_i} \lambda \left( \sum \limits_{v \in V} \phi_{v} - 1 \right) \\
+%
+&= L^\prime \left( \phi \right) - \lambda \\
+%
+&= \frac{\partial}{\partial \phi_i} \left( \sum \limits_{v \in V} c \! \left( v \right) \log{\phi_v} \right) - \lambda \\
+%
+&= \frac{c \left( i \right)}{\phi_i} - \lambda
+\end{align*}
+
+This can be set to $0$ and be solved for $\phi_i$
+
+\begin{align*}
+\frac{c \left( i \right)}{\phi_i} - \lambda &= 0 \\
+%
+\frac{c \left( i \right)}{\phi_i} &= \lambda \\
+%
+\phi_{i} &= \frac{c \left( i \right)}{\lambda}
+\end{align*}
+
+The partial derivative of $\Lambda$ with respect to $\lambda$ is
+
+\begin{align*}
+\frac{\partial}{\partial \lambda} \Lambda = 1 - \sum \limits_{v \in V} \phi_{v}
+\end{align*}
+
+This can be set to $0$ and solved for $\lambda$, substituting $\phi_{v}$ for $ \frac{c \left( v \right)}{\lambda}$.
+
+\begin{align*}
+1 - \sum \limits_{v \in V} \phi_{v} &= 0 \\
+%
+1 - \sum \limits_{v \in V} \frac{c \left( v \right)}{\lambda} &= 0 \\
+%
+\sum \limits_{v \in V} \frac{c \left( v \right)}{\lambda} &= 1 \\
+%
+\lambda = \sum \limits_{v \in V} c \left( v \right) &= n
+\end{align*}
+
+It then becomes clear that the maximum likelihood estimator $\phi$ is
+
+\begin{align*}
+\phi_i &= \frac{c \left( i \right)}{n}
+\end{align*}
+%
+%
+%
+\subsection{Bigram}
+
+Given $n$ tokens
+
+$$ y_0, y_1, y_2, \cdots, y_n $$
+
+With a vocabulary set
+
+$$ V = \left\{ v_0, v_1, v_2, \cdots, v_m \right\} $$
+
+Whose generative story is:
+
+From probability vector $\theta$ draw
+
+$$ y_i \: \lvert \: y_{i - 1}, \theta \stackrel{i.i.d.}{\sim} \text{cat} \left( \theta_{i - 1} \right) $$
+
+The maximum likelihood estimator of $\theta$ is the probability distribution $\phi$ that maximizes the log-likelihood of observed data, calculated with
+
+$$ L \left( \phi \right) = \sum \limits_{v, w \in V} c \left( v, w \right) \log{\phi_{v, w}} $$
+
+To be derived is that the maximum likelihood estimator is
+
+$$\phi_{i, j} = \frac{c \left( i, j \right)}{ c \left( i \right)}$$
+
+To do this, you maximize the log-likelihood function, varying $\phi$ (restricted to valid probability distributions). This can be done with the method of Lagrange multipliers.
+
+\begin{align*}
+&\max \limits_{\phi} \; L\left( \phi \right) \; \text{s.t.} \; \forall \; v \in V : \sum \limits_{w \in V} \phi_{v, w} = 1 \\
+%
+&\vec{\lambda} = \left( \lambda_1, \lambda_2, \cdots , \lambda_m \right) \notag \\
+%
+&\vec{G} = \left( \sum \limits_{w \in V} \phi_{v_1, w} - 1, \sum \limits_{w \in V} \phi_{v_2, w} - 1, \cdots , \sum \limits_{w \in V} \phi_{v_m, w} - 1 \right) \\
+%
+&\Lambda \left( \phi, \lambda \right) = L\left( \phi \right) - \vec{\lambda} \cdot \vec{G}
+\end{align*}
+
+The partial derivative of $\Lambda$ with respect to $\phi_{i, j}$ for any bigram $\left( i, j \right)$ is
+
+\begin{align*}
+%
+\frac{\partial}{\partial \phi_{i, j}} \Lambda &= L^\prime \left( \phi \right) - \frac{\partial}{\partial \phi_{i, j}} \vec{\lambda} \cdot \vec{G} \\
+%
+&= L^\prime \left( \phi \right) - \lambda_i \\
+%
+&= \frac{\partial}{\partial \phi_{i, j}} \left( \sum \limits_{v, w \in V} c \! \left( v, w \right) \log{\phi_{v, w}} \right) - \lambda_i \\
+%
+&= \frac{c \left( i, j \right)}{\phi_{i, j}} - \lambda_i
+\end{align*}
+
+This can be set to $0$ and be solved for $\phi_{i, j}$
+
+\begin{align*}
+\frac{c \left( i, j \right)}{\phi_{i, j}} - \lambda_i &= 0 \\
+%
+\frac{c \left( i, j \right)}{\phi_{i, j}} &= \lambda_i \\
+%
+\phi_{i, j} &= \frac{c \left( i, j \right)}{\lambda_i}
+\end{align*}
+
+The partial derivative of $\Lambda$ with respect to $\lambda_i$ is
+
+\begin{align*}
+\frac{\partial}{\partial \lambda_i} \Lambda &= 1 - \sum \limits_{w \in V} \phi_{v_i, w}
+\end{align*}
+
+This can be set to $0$ and solved for $\lambda$, substituting $\phi_{v_i, w}$ for $ \frac{c \left( v_i, w \right)}{\lambda_i}$.
+
+\begin{align*}
+1 - \sum \limits_{w \in V} \phi_{v_i, w} &= 0 \\
+%
+1 - \sum \limits_{w \in V}  \frac{c \left( v_i, w \right)}{\lambda_i} &= 0 \\
+%
+\sum \limits_{w \in V}  \frac{c \left( v_i, w \right)}{\lambda_i} &= 1 \\
+%
+\lambda_i = \sum \limits_{w \in V} c \left( v_i, w \right) &= c \left( v_i \right)
+\end{align*}
+
+It then becomes clear that the maximum likelihood estimator $\phi$ is
+
+\begin{align*}
+\phi_{i, j} &= \frac{c \left( i, j \right)}{c \left( i \right)}
+\end{align*}
 
 \end{document}
