@@ -22,7 +22,7 @@
 \usepackage{url}
 \usepackage{latexsym}
 \usepackage{color}
-
+\usepackage{amssymb}
 \usepackage{amsmath}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -93,7 +93,7 @@ Other interpolations can also be used. For example, you can interpolate bigram, 
 P\left( w \vert v \right) = \lambda \frac{c \left(v, w\right)}{c \left(v\right)} + \mu \frac{c \left(v\right)}{N} + \theta \frac{1}{V} \\
 \text{where} \\
 \lambda + \mu + \theta = 1 \\
-0 < \lambda, \mu, \theta < 1
+0 \leq \lambda, \mu, \theta \leq 1
 \end{gather*}
 
 The values for $\lambda$, $\mu$, and $\theta$ can be varied to get the optimize results.
@@ -101,6 +101,8 @@ The values for $\lambda$, $\mu$, and $\theta$ can be varied to get the optimize 
 \paragraph{Maximum Likelihood Estimator}
 
 When a model is unsmoothed, it is the maximum likelihood estimator (MLE) as it will give the highest probability when run on the data the model was trained. For the full proof of this see Appendix B.
+
+\subsubsection{Evaluation}
 
 \paragraph{Normalized Log-Likelihood}
 
@@ -118,13 +120,60 @@ where $T$ is the number of tokens in the held-out data.
 
 An example usage of this would be to train a model on email spam, and then calculate the log-likelihood of another email. The closer the email's log-likelihood is to zero, the more likely that it is spam.
 
-{\color{red} Maximization of log-likelihood}
+\paragraph{Maximization}
+
+When tuning the amount of smoothing for a model, we often want to maximize the log-likelihood on a held-out dataset. This can be done using the derivative of the log-likelihood and gradient descent.
+
+The derivative of an additively smoothed bigram log-likelihood can be derived as follows
+
+\begin{align}
+P\left(\mathcal{H}\right) &= \sum\limits_{v, w \in V} N\left(v, w\right) \log P^*\left(w \vert v\right) \\
+&= \sum\limits_{v, w \in V} N\left(v, w\right) \log \frac{c\left(v, w\right) + \alpha}{c\left(v\right) + V\alpha} \\
+&= \sum\limits_{v, w \in V} N\left(v, w\right) \log\left(c\left(v, w\right) + \alpha\right) - \log\left( c\left(v\right) + V\alpha \right)
+\end{align}
+
+$$ P^\prime\left(\mathcal{H}\right) = \sum\limits_{v, w \in V} N\left(v, w\right) \left(\frac{1}{c\left(v, w\right) + \alpha} - \frac{V}{c\left(v\right) + V\alpha }\right) $$
+
+From there, log-likelihood can be maximized using gradient descent, as described as follows
+
+\begin{gather*}
+d = \text{precision} \\
+\epsilon = \text{step size} \\
+\mathcal{G}\left(x, f \right) =
+\begin{cases}
+\mathcal{G}\left(x + \epsilon \cdot f^\prime\left(x\right), f \right) & \text{if } \vert x - \epsilon \cdot f^\prime\left(x\right) \vert > d \\
+x & \text{else}
+\end{cases}
+\end{gather*}
 
 \subsubsection{Math}
 
 \paragraph{NLP Distributions and Properties}
 
-{\color{red} Valid probability distributions}
+Language models have several constraints. The largest of these is that language must be valid probability distributions, with all probabilities between 0 and 1 and summing to 1.
+
+\setcounter{equation}{0}
+
+\begin{gather}
+\forall w \in V : 0 \leq P\left(w\right) \leq 1 \\
+\sum\limits_{w \in V} P\left(w\right) = 1
+\end{gather}
+
+Additionally, the marginal count will always equal the sum of the individual counts
+
+$$ c\left(v\right) = \sum\limits_{w \in V} c\left(v, w\right) $$
+
+\paragraph{Lagrange Multipliers}
+
+The method of Lagrange multipliers is a way to find extrema of a function bounded by equality constraints.
+
+\begin{gather*}
+\text{maximize } f\left(x\right) \\
+\text{subject to } g\left(x\right) = c
+\end{gather*}
+
+Lagrange multipliers are central to the MLE proof in Appendix B.
+
 
 \paragraph{Entropy and Cross-Entropy}
 
@@ -141,10 +190,6 @@ An example usage of this would be to train a model on email spam, and then calcu
 \paragraph{XEnt}
 
 {\color{red} I don't believe we went over this. Related to Cross-Entropy}
-
-\paragraph{Lagrange Multipliers}
-
-{\color{red} To add}
 
 \section{Methods \& Results}
 
