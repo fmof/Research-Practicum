@@ -24,6 +24,7 @@
 \usepackage{color}
 \usepackage{amssymb}
 \usepackage{amsmath}
+\usepackage{graphicx}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 
@@ -97,6 +98,32 @@ P\left( w \vert v \right) = \lambda \frac{c \left(v, w\right)}{c \left(v\right)}
 \end{gather*}
 
 The values for $\lambda$, $\mu$, and $\theta$ can be varied to maximize the generalization of the model.
+
+The reason that interpolation is useful is it averages multiple models that are all able to partially explain the generative story of the text.
+
+For example, say there are two probability distributions, $\mathcal{F} = N\left(-3, 1\right)$ and $\mathcal{G} = N\left(3, 1 \right)$, both normal distributions but with different means. There is also a weighted coin that has a $0.3$ chance of landing heads up (Bernoulli(.7)). Let $X$ be equal to 2000 data points drawn from the hierarchal model $\mathcal{H}$. For each point, flip the coin and if it's heads, draw a point from $\mathcal{F}$, otherwise draw a point from $\mathcal{G}$
+
+This produces the following histogram
+
+\includegraphics[width=218px]{graphs/hist.png}
+
+The normalized log-likelihood of $X$ scored with model $\mathcal{F}$ and $\mathcal{G}$ equals
+
+\begin{align*}
+&\mathcal{F}_{score}\left(X\right) = \\
+& \left(\sum\limits_{x \in X} \log \text{normPDF}\left(x, -3, 1\right)\right) / 2000 \approx -14 \\
+&\mathcal{G}_{score}\left(X\right) = \\
+&\left(\sum\limits_{x \in X} \log \text{normPDF}\left(x, 3, 1\right)\right) / 2000 \approx -7
+\end{align*}
+
+However, when you score the data with the interpolated model you get
+
+\begin{align*}
+&\sum\limits_{x \in X} \log \left( 0.3 \cdot \text{normPDF}\left(x, -3, 1\right) + 0.7 \cdot \text{normPDF}\left(x, 3, 1\right) \right) \\
+&\approx -2
+\end{align*}
+
+which is significantly lower. Interpolating multiple N-gram models works in a similar manner to lower normalized log-likelihoods by better describing the generative story of the text.
 
 \paragraph{Maximum Likelihood Estimator}
 
