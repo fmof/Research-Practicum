@@ -72,6 +72,12 @@ An example use of an N-gram model would be when you want to predict the next wor
 
 Simple N-gram models work as described above, but they can be greatly improved. Higher-order models especially suffer from over-fitting where they become too specialized to the dataset they were trained on, generalizing poorly. Smoothing the N-gram probability distribution can help alleviate this problem by moving probability mass to lessen extremes and prevent counts that are equal to 0.
 
+This problem of data sparsity can be seen in the following graph
+
+\includegraphics[width=218px]{graphs/x-ton.png}
+
+There are many words that appear only one time and few that appear many times. Note that both scales are log-scales and that the relationship in negatively exponential.
+
 \paragraph{Additive}
 
 One method of smoothing is called additive smoothing. This method works by adding a certain amount $\alpha$ to every count. Using this type of smoothing, the probability function is calculated as follows
