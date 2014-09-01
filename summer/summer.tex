@@ -226,9 +226,18 @@ One thing to note is that this find a point where the derivative is 0; this can 
 
 Lagrange multipliers are central to the MLE proof in Appendix B, which acts as a good example of their use.
 
-\paragraph{Entropy and Cross-Entropy}
+\paragraph{Entropy}
+Entropy can be defined as a measure of the amount of information needed to represent a random variable on average. This can be calculated as follows
+% This is a very very very rough section, just wanted to throw something in here before I go to bed
+\begin{align*}
+H\left(X\right) &= E\left[I\left(X\right)\right] \\
+&= \sum\limits_i P\left(x=i\right) I\left(x=i\right) \\
+&= - \sum\limits_i P\left(x=i\right) \log P\left(x=i\right)
+\end{align*}
 
-{\color{red} Went over these and I have notes, will probably just need to pull up the wiki page to refresh myself}
+$I\left(X\right)$ is the information content of $X$ and $E\left[X\right]$ is the expected value of random variable $X$.
+
+\paragraph{Cross Entropy}
 
 \paragraph{Perplexity}
 
@@ -237,10 +246,6 @@ Lagrange multipliers are central to the MLE proof in Appendix B, which acts as a
 \paragraph{KL Similarity}
 
 {\color{red} Same as above}
-
-\paragraph{XEnt}
-
-{\color{red} I don't believe we went over this. Related to Cross-Entropy}
 
 \section{Methods \& Results}
 
