@@ -228,24 +228,39 @@ Lagrange multipliers are central to the MLE proof in Appendix B, which acts as a
 
 \paragraph{Entropy}
 Entropy can be defined as a measure of the amount of information needed to represent a random variable on average. This can be calculated as follows
-% This is a very very very rough section, just wanted to throw something in here before I go to bed
 \begin{align*}
 H\left(X\right) &= E\left[I\left(X\right)\right] \\
 &= \sum\limits_i P\left(x=i\right) I\left(x=i\right) \\
 &= - \sum\limits_i P\left(x=i\right) \log P\left(x=i\right)
 \end{align*}
 
-$I\left(X\right)$ is the information content of $X$ and $E\left[X\right]$ is the expected value of random variable $X$.
+where $I\left(X\right)$ is the information content of $X$ and $E\left[X\right]$ is the expected value of random variable $X$.
 
-\paragraph{Cross Entropy}
+A uniform probability distribution has the highest entropy, and a probability distribution with all of its mass on one event has the lowest (0).
 
 \paragraph{Perplexity}
 
-{\color{red} Same as above}
+Perplexity is a measure of how well a probability model predicts a sample. It can be calculated as follows
+
+$$ 2^{H\left(p\right)} = 2^{-\sum_x p\left(x\right) \log_2 p\left(x\right)}$$
+% Is the sum over x normally N-grams in the held-out dataset?
 
 \paragraph{KL Similarity}
 
-{\color{red} Same as above}
+KL Similarity is a measure of similarity between two probability models. It can calculated as follows
+
+$$D_{KL}\left(P\|Q\right) = \sum\limits_i \ln\left(\frac{P\left(i\right)}{Q\left(i\right)}\right) P\left(i\right)$$
+
+It is also a measure of information lost when $Q$ is used to approximate $P$. If $P$ and $Q$ are identical, then the KL similarity is equal to 0.
+
+\paragraph{Cross Entropy}
+
+Cross entropy is another method to estimate how well one probability distribution predicts another, similar to perplexity. It can be calculated as follows
+
+\begin{align*}
+H\left(p,q\right) &= E_p\left[-\log q\right] \\
+&= -\sum_x p\left(x\right) \log q\left(x\right)
+\end{align*}
 
 \section{Methods \& Results}
 
