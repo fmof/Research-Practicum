@@ -65,15 +65,17 @@ u \geq 0, \\
 \sum\limits_{v \in V} u\left(w_{1:i-1}, v\right) > 0
 \end{gather*}
 
+Here, $w$ represents a token and the notation $w_{1:i-1}$ is equivalent to the sequence of tokens $w_1, w_2, \cdots, w_{i-1}$. Additionally, $V$ represents the vocabulary set, with the sum iterating over each type $v$.
+
 If you let
 $$ u\left(w_{i-1}, w_i\right) = c\left(w_{i-1}, w_i\right) $$
-then
+\quad then
 \begin{align*}
 P\left(w_i \vert w_{i-1} \right) &= \frac{ c\left( w_{i-1}, w_i \right) }{ \sum\limits_{v \in V} c\left( w_{i-1}, v \right)} \\
 &= \frac{ c\left( w_{i-1}, w_i \right) }{c\left( w_{i-1} \right) }
 \end{align*}
 
-where $w$ represents a single token, $c \left( w_1, w_2, \cdots, w_i \right)$ returns the number of times the sequence $w_1, w_2, \cdots, w_i$ occurred in the training data, and $V$ is the set of your vocabulary.
+where $c \left( w_1, w_2, \cdots, w_i \right)$ returns the number of times the sequence $w_1, w_2, \cdots, w_i$ occurred in the training data.
 
 The particular N-gram example used is called a bigram because it looks at token sequences of length two. If it is a single token it is an unigram, three tokens it is a trigram, four tokens is a 4-gram, and so on.
 
@@ -81,17 +83,64 @@ $\sum\limits_{v \in V} c\left( w_{i-1}, v \right) = c\left( w_{i-1}\right)$ due 
 
 $$ c\left(w_1, w_2, \cdots, w_i\right) =  \sum\limits_{v \in V} c\left(w_1, w_2, \cdots, w_i, v\right) $$
 
-An example use of an N-gram model would be when you want to predict the next word in a sequence. If I have the sequence "How are", you could use an N-gram trained on other data to try and predict the next word by iterating over your vocabulary and choosing the highest probability $\argmax\limits_{w \in V} P\left( w \; \vert \; \text{How}, \text{are} \right)$. This could, for example, be "you" where $P\left( \text{you} \; \vert \; \text{How}, \text{are} \right) = 0.7$. In this example, the N-gram is a trigram (2-gram) as it uses 2 tokens of context in calculating probability.
+An example use of an N-gram model would be when you want to predict the next word in a sequence. If I have the sequence "How are", you could use an N-gram trained on other data to try and predict the next word by iterating over your vocabulary and choosing the highest probability $\argmax\limits_{w \in V} P\left( w \; \vert \; \text{How}, \text{are} \right)$. This could, for example, be "you" where $P\left( \text{you} \; \vert \; \text{How}, \text{are} \right) = 0.7$. In this example, the N-gram is a trigram (3-gram) as it uses 3 tokens in calculating the probability.
+
+\subsubsection{Evaluation}
+
+\paragraph{Normalized Log-Likelihood}
+
+Minuscule probabilities are difficult to deal with due to limits on the number of significant digits in floating point point arithmetic. A way to solve this is to get the log of the probabilities. From there, a multiplication of probabilities becomes an addition of the log-probabilities.
+
+This can be used by N-gram models as a way to gauge similarity between text. If you train an N-gram model on a dataset and then "score" another dataset by adding the log-probabilities of every N-gram in the scoring dataset, you get the log-likelihood. The more negative the likelihood is, the more "surprised" your model is by the text. The log-likelihood can be calculated as follows for the bigram
+
+$$ \mathcal{L}\left(\mathcal{H}\right) = \sum\limits_{v, w \in V} N\left(v, w \right) \log P\left(w \vert v \right) $$
+
+This value can be normalized to make comparisons easier, as follows
+
+$$ \mathcal{L}_\mathcal{N}\left(\mathcal{H}\right) = \frac{ \mathcal{L}\left(\mathcal{H}\right) }{T} $$
+
+where $T$ is the number of tokens in the held-out data.
+
+An example usage of this would be to train a model on email spam, and then calculate the log-likelihood of another email. The closer the email's log-likelihood is to zero, the more likely that it is spam.
+
+\paragraph{Maximization}
+
+When tuning the amount of smoothing for a model, we often want to maximize the log-likelihood on a held-out dataset. This can be done using the derivative of the log-likelihood and gradient descent.
+
+The derivative of an additively smoothed bigram log-likelihood can be derived as follows
+
+\begin{align}
+P\left(\mathcal{H}\right) &= \sum\limits_{v, w \in V} N\left(v, w\right) \log P^*\left(w \vert v\right) \\
+&= \sum\limits_{v, w \in V} N\left(v, w\right) \log \frac{c\left(v, w\right) + \alpha}{c\left(v\right) + V\alpha} \\
+&= \sum\limits_{v, w \in V} N\left(v, w\right) \log\left(c\left(v, w\right) + \alpha\right) - \log\left( c\left(v\right) + V\alpha \right)
+\end{align}
+
+$$ P^\prime\left(\mathcal{H}\right) = \sum\limits_{v, w \in V} N\left(v, w\right) \left(\frac{1}{c\left(v, w\right) + \alpha} - \frac{V}{c\left(v\right) + V\alpha }\right) $$
+
+From there, log-likelihood can be maximized using gradient descent, described as follows, letting $f = P$ with $x$ representing the amount of smoothing (setting $x$ to an arbitrary start value).
+
+\begin{gather*}
+d = \text{precision} \\
+\epsilon = \text{step size} \\
+\mathcal{G}\left(x, f \right) =
+\begin{cases}
+\mathcal{G}\left(x + \epsilon \cdot f^\prime\left(x\right), f \right) & \text{if } \vert x - \epsilon \cdot f^\prime\left(x\right) \vert > d \\
+x & \text{else}
+\end{cases}
+\end{gather*}
+
 
 \subsubsection{Smoothing}
 
-Simple N-gram models work as described above, but they can be greatly improved. Higher-order models especially suffer from over-fitting where they become too specialized to the dataset they were trained on, generalizing poorly. Smoothing the N-gram probability distribution can help alleviate this problem by moving probability mass to lessen extremes and prevent counts that are equal to 0.
+Simple N-gram models work as described above, but they can be greatly improved. Higher-order models especially suffer from over-fitting where they become too specialized to the dataset they were trained on, generalizing poorly. Data is often very sparse with many singletons (types that only occur once) and very few words that occur many times.
 
 This problem of data sparsity can be seen in the following graph
 
 \includegraphics[width=218px]{graphs/x-ton.png}
 
-There are many words that appear only one time and few that appear many times. Note that both scales are log-scales and that the relationship in negatively exponential.
+Note that both scales are log-scales and that the relationship in negatively exponential.
+
+Smoothing the N-gram probability distribution can help alleviate this problem by moving probability mass to lessen extremes and prevent counts that are equal to 0.
 
 \paragraph{Additive}
 
@@ -149,50 +198,6 @@ which is significantly lower. Interpolating multiple N-gram models works in a si
 \paragraph{Maximum Likelihood Estimator}
 
 When a model is unsmoothed, it is the maximum likelihood estimator (MLE) as it will give the highest probability when run on the data the model was trained. For the full proof of this see Appendix B.
-
-\subsubsection{Evaluation}
-
-\paragraph{Normalized Log-Likelihood}
-
-Minuscule probabilities are difficult to deal with due to limits on the number of significant digits in floating point point arithmetic. A way to solve this is to get the log of the probabilities. From there, a multiplication of probabilities becomes an addition of the log-probabilities.
-
-This can be used by N-gram models as a way to gauge similarity between text. If you train an N-gram model on a dataset and then "score" another dataset by adding the log-probabilities of every N-gram in the scoring dataset, you get the log-likelihood. The more negative the likelihood is, the more "surprised" your model is by the text. The log-likelihood can be calculated as follows for the bigram
-
-$$ \mathcal{L}\left(\mathcal{H}\right) = \sum\limits_{v, w \in V} N\left(v, w \right) \log P\left(w \vert v \right) $$
-
-This value can be normalized to make comparisons easier, as follows
-
-$$ \mathcal{L}_\mathcal{N}\left(\mathcal{H}\right) = \frac{ \mathcal{L}\left(\mathcal{H}\right) }{T} $$
-
-where $T$ is the number of tokens in the held-out data.
-
-An example usage of this would be to train a model on email spam, and then calculate the log-likelihood of another email. The closer the email's log-likelihood is to zero, the more likely that it is spam.
-
-\paragraph{Maximization}
-
-When tuning the amount of smoothing for a model, we often want to maximize the log-likelihood on a held-out dataset. This can be done using the derivative of the log-likelihood and gradient descent.
-
-The derivative of an additively smoothed bigram log-likelihood can be derived as follows
-
-\begin{align}
-P\left(\mathcal{H}\right) &= \sum\limits_{v, w \in V} N\left(v, w\right) \log P^*\left(w \vert v\right) \\
-&= \sum\limits_{v, w \in V} N\left(v, w\right) \log \frac{c\left(v, w\right) + \alpha}{c\left(v\right) + V\alpha} \\
-&= \sum\limits_{v, w \in V} N\left(v, w\right) \log\left(c\left(v, w\right) + \alpha\right) - \log\left( c\left(v\right) + V\alpha \right)
-\end{align}
-
-$$ P^\prime\left(\mathcal{H}\right) = \sum\limits_{v, w \in V} N\left(v, w\right) \left(\frac{1}{c\left(v, w\right) + \alpha} - \frac{V}{c\left(v\right) + V\alpha }\right) $$
-
-From there, log-likelihood can be maximized using gradient descent, described as follows, letting $f = P$ with $x$ representing the amount of smoothing (setting $x$ to an arbitrary start value).
-
-\begin{gather*}
-d = \text{precision} \\
-\epsilon = \text{step size} \\
-\mathcal{G}\left(x, f \right) =
-\begin{cases}
-\mathcal{G}\left(x + \epsilon \cdot f^\prime\left(x\right), f \right) & \text{if } \vert x - \epsilon \cdot f^\prime\left(x\right) \vert > d \\
-x & \text{else}
-\end{cases}
-\end{gather*}
 
 \subsubsection{Math}
 
