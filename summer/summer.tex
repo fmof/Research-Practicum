@@ -57,14 +57,34 @@ The field of computational linguistics concerns using computer science, machine 
 
 \subsubsection{N-grams}
 
-One type of model I studied in depth this summer was the N-gram. N-grams work by assigning a sequence of tokens (words, punctuation, etc.) of length $N$ a probability of occurring based on the number of times that sequence occurs in training data. The probability is equal to
+One type of model I studied in depth this summer was the N-gram. N-grams work by assigning a sequence of tokens (words, punctuation, etc.) of length $N$ a probability of occurring. This probability is equal to
 
-$$ P\left(w_i \vert w_1, w_2, \cdots, w_{i-1} \right) = \frac{ c\left( w_1, w_2, \cdots, w_i \right) }{ c\left( w_1, w_2, \cdots, w_{i-1} \right) } $$
+\begin{gather*}
+P\left(w_i | w_{1:i-1}\right) = \frac{u\left(w_{1:i-1}, w_i\right)}{\sum\limits_{v \in V} u\left(w_{1:i-1}, v\right)} \\
+\text{where} \\
+u \geq 0, \\
+\sum\limits_{v \in V} u\left(w_{1:i-1}, v\right) > 0
+\end{gather*}
+
+If you let
 
 
-where $c \left( w_1, w_2, \cdots, w_i \right)$ returns the number of times the sequence $w_1, w_2, \cdots, w_i$ occurred in the training data. The order of an N-gram model is related to how large $i$ is. If $i$ is 1, you have a 1-gram (a unigram). If $i$ is 2 you have a 2-gram (a bigram), and so on.  So, for example, a bigram probability would be calculated as follows
+$$ u\left(w_{i-1}, w_i\right) = c\left(w_{i-1}, w_i\right) $$
 
-$$ P\left(w \vert v \right) = \frac{ c\left( v, w \right) }{ c\left( v \right) } $$
+then
+
+\begin{align*}
+P\left(w_i \vert w_{i-1} \right) &= \frac{ c\left( w_{i-1}, w_i \right) }{ \sum\limits_{v \in V} c\left( w_{i-1}, v \right)} \\
+&= \frac{ c\left( w_{i-1}, w_i \right) }{c\left( w_{i-1} \right) }
+\end{align*}
+
+where $w$ represents a single token, $c \left( w_1, w_2, \cdots, w_i \right)$ returns the number of times the sequence $w_1, w_2, \cdots, w_i$ occurred in the training data, and $V$ is the set of your vocabulary.
+
+The particular N-gram example used is called a bigram because it looks at token sequences of length two. If it is a single token it is an unigram, three tokens it is a trigram, four tokens is a 4-gram, and so on.
+
+$\sum\limits_{v \in V} c\left( w_{i-1}, v \right) = c\left( w_{i-1}\right)$ due to the fact that every time a two token sequence occurs, that first token in the sequence also occurs. Therefore, the sum of all the two token counts is equal to the one token count, called the marginal count. In a more general form,
+
+$$ c\left(w_1, w_2, \cdots, w_i\right) =  \sum\limits_{v \in V} c\left(w_1, w_2, \cdots, w_i, v\right) $$
 
 An example use of an N-gram model would be when you want to predict the next word in a sequence. If I have the sequence "How are", you could use an N-gram trained on other data to try and predict the next word by iterating over your vocabulary and choosing the highest probability $\argmax\limits_{w \in V} P\left( w \; \vert \; \text{How}, \text{are} \right)$. This could, for example, be "you" where $P\left( \text{you} \; \vert \; \text{How}, \text{are} \right) = 0.7$. In this example, the N-gram is a trigram (2-gram) as it uses 2 tokens of context in calculating probability.
 
@@ -92,7 +112,7 @@ An interesting thing to note about additive smoothing is that it is also just a 
 
 $$ P^*\left( w \vert v \right) = \lambda \frac{c\left( v, w \right)}{c\left( v\right)} + \left( 1 - \lambda \right) \frac{1}{V} $$
 
-where $0 < \lambda\left(v, \alpha\right) < 1$. For the full derivation of this, see Appendix A.
+where $0 < \lambda < 1$. For the full derivation of this, see Appendix A.
 
 Other interpolations can also be used. For example, you can interpolate bigram, unigram, and uniform models as follows
 
@@ -167,7 +187,7 @@ P\left(\mathcal{H}\right) &= \sum\limits_{v, w \in V} N\left(v, w\right) \log P^
 
 $$ P^\prime\left(\mathcal{H}\right) = \sum\limits_{v, w \in V} N\left(v, w\right) \left(\frac{1}{c\left(v, w\right) + \alpha} - \frac{V}{c\left(v\right) + V\alpha }\right) $$
 
-From there, log-likelihood can be maximized using gradient descent, as described as follows
+From there, log-likelihood can be maximized using gradient descent, described as follows, letting $f = P$ with $x$ representing the amount of smoothing (setting $x$ to an arbitrary start value).
 
 \begin{gather*}
 d = \text{precision} \\
