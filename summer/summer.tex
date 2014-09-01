@@ -57,22 +57,17 @@ The field of computational linguistics concerns using computer science, machine 
 
 \subsubsection{N-grams}
 
-One type of model I studied in depth this summer was the N-gram. N-grams work by assigning a sequence of tokens (words, punctuation, etc.) of length $N$ a probability of occurring. This probability is equal to
-
+N-grams are a very commonly used tool in computational linguistics for modeling language. N-grams work by assigning a sequence of tokens (words, punctuation, etc.) of length $N$ a probability of occurring. This probability is equal to
+$$ P\left(w_i | w_{1:i-1}\right) = \frac{u\left(w_{1:i-1}, w_i\right)}{\sum\limits_{v \in V} u\left(w_{1:i-1}, v\right)} $$
+where $u$ is an unnormalized probability function that meets the following conditions
 \begin{gather*}
-P\left(w_i | w_{1:i-1}\right) = \frac{u\left(w_{1:i-1}, w_i\right)}{\sum\limits_{v \in V} u\left(w_{1:i-1}, v\right)} \\
-\text{where} \\
 u \geq 0, \\
 \sum\limits_{v \in V} u\left(w_{1:i-1}, v\right) > 0
 \end{gather*}
 
 If you let
-
-
 $$ u\left(w_{i-1}, w_i\right) = c\left(w_{i-1}, w_i\right) $$
-
 then
-
 \begin{align*}
 P\left(w_i \vert w_{i-1} \right) &= \frac{ c\left( w_{i-1}, w_i \right) }{ \sum\limits_{v \in V} c\left( w_{i-1}, v \right)} \\
 &= \frac{ c\left( w_{i-1}, w_i \right) }{c\left( w_{i-1} \right) }
@@ -219,13 +214,17 @@ $$ c\left(v\right) = \sum\limits_{w \in V} c\left(v, w\right) $$
 \paragraph{Lagrange Multipliers}
 
 The method of Lagrange multipliers is a way to find extrema of a function bounded by equality constraints. In formal terms the optimization problem is stated as
-
-maximize $f\left(x\right)$ \\
-subject to $g\left(x\right) = c$
-
-Lagrange multipliers are central to the MLE proof in Appendix B.
-
+\begin{gather*}
+\text{maximize } f\left(x\right) \\
+\text{subject to } g\left(x\right) = c
+\end{gather*}
+One then uses the following equation
 $$ \Lambda\left(x, \lambda \right) = f\left(x\right) + \lambda\left(g\left(x\right) - c \right) $$
+and finds the derivative of $x$ and $\lambda$, setting $\lambda$ to 0 to maximize the function.
+
+One thing to note is that this find a point where the derivative is 0; this can be either a minima or maxima. 
+
+Lagrange multipliers are central to the MLE proof in Appendix B, which acts as a good example of their use.
 
 \paragraph{Entropy and Cross-Entropy}
 
