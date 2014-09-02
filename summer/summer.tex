@@ -26,6 +26,8 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 
+\usepackage{todonotes}
+
 \DeclareMathOperator*{\argmax}{arg\,max}
 
 \title{Summer Research Paper}
@@ -46,7 +48,7 @@
 \maketitle
 
 \begin{abstract}
-  A review of basic knowledge about the field of computation linguistics and a description of what I've accomplished over the summer.
+\todo{provide an overview of what you learned: basic calculus, statistics, NLP, etc.}  A review of basic knowledge about the field of computation linguistics and a description of what I've accomplished over the summer.
 \end{abstract}
 
 \section{Introduction}
@@ -57,7 +59,8 @@ The field of computational linguistics concerns using computer science, machine 
 
 \subsubsection{N-grams}
 
-N-grams are a very commonly used tool in computational linguistics for modeling language. N-grams work by assigning a sequence of tokens (words, punctuation, etc.) of length $N$ a probability of occurring. This probability is equal to
+N-grams are a very commonly used tool in computational linguistics for modeling language. N-grams work by assigning a sequence of tokens (words, punctuation, etc.) of length $N$ a probability of occurring. This probability is equal to \todo{replace this sentence w/: Each word $w_i$ is assigned a probability conditioned on the previous $i-1$ words. This probability can be written as}
+
 $$ P\left(w_i | w_{1:i-1}\right) = \frac{u\left(w_{1:i-1}, w_i\right)}{\sum\limits_{v \in V} u\left(w_{1:i-1}, v\right)} $$
 where $u$ is an unnormalized probability function that meets the following conditions
 \begin{gather*}
@@ -65,9 +68,9 @@ u \geq 0, \\
 \sum\limits_{v \in V} u\left(w_{1:i-1}, v\right) > 0
 \end{gather*}
 
-Here, $w$ represents a token and the notation $w_{1:i-1}$ is equivalent to the sequence of tokens $w_1, w_2, \cdots, w_{i-1}$. Additionally, $V$ represents the vocabulary set, with the sum iterating over each type $v$.
+\todo{say ``word,'' and put ``token'' in parentheses} Here, $w$ represents a token and the notation $w_{1:i-1}$ is equivalent to the sequence of tokens $w_1, w_2, \cdots, w_{i-1}$. Additionally, $V$ represents the vocabulary set, with the sum iterating over each type $v$. \todo{say ``unique word type''}
 
-If you let
+\todo{before this paragraph, you should mention what the probability of an entire tweet is. It'd be good to include the generative story (and explain what that means). Make sure you mention that you don't actually believe that data were generated that way; it's an approximation} If you let
 $$ u\left(w_{i-1}, w_i\right) = c\left(w_{i-1}, w_i\right) $$
 \quad then
 \begin{align*}
@@ -79,11 +82,11 @@ where $c \left( w_1, w_2, \cdots, w_i \right)$ returns the number of times the s
 
 The particular N-gram example used is called a bigram because it looks at token sequences of length two. If it is a single token it is an unigram, three tokens it is a trigram, four tokens is a 4-gram, and so on.
 
-$\sum\limits_{v \in V} c\left( w_{i-1}, v \right) = c\left( w_{i-1}\right)$ due to the fact that every time a two token sequence occurs, that first token in the sequence also occurs. Therefore, the sum of all the two token counts is equal to the one token count, called the marginal count. In a more general form,
+\todo{better transition, something like: ``The denominator $c(w_{1:i-1})$ is the marginal count.'' Then transition into the formula. This may mean rearranging the sentences in this paragraph.} $\sum\limits_{v \in V} c\left( w_{i-1}, v \right) = c\left( w_{i-1}\right)$ due to the fact that every time a two token sequence occurs, that first token in the sequence also occurs. Therefore, the sum of all the two token counts is equal to the one token count, called the marginal count. In a more general form,
 
 $$ c\left(w_1, w_2, \cdots, w_i\right) =  \sum\limits_{v \in V} c\left(w_1, w_2, \cdots, w_i, v\right) $$
 
-An example use of an N-gram model would be when you want to predict the next word in a sequence. If I have the sequence "How are", you could use an N-gram trained on other data to try and predict the next word by iterating over your vocabulary and choosing the highest probability $\argmax\limits_{w \in V} P\left( w \; \vert \; \text{How}, \text{are} \right)$. This could, for example, be "you" where $P\left( \text{you} \; \vert \; \text{How}, \text{are} \right) = 0.7$. In this example, the N-gram is a trigram (3-gram) as it uses 3 tokens in calculating the probability.
+An example use of an N-gram model would be when you want to predict the next word in a sequence. If I have the sequence "How are", you could use an N-gram trained on other data to try and predict the next word by iterating over your vocabulary and choosing the highest probability \todo{make this display, not inline} $\argmax\limits_{w \in V} P\left( w \; \vert \; \text{How}, \text{are} \right)$. This could, for example, be "you" where $P\left( \text{you} \; \vert \; \text{How}, \text{are} \right) = 0.7$. In this example, the N-gram is a trigram (3-gram) as it uses 3 tokens in calculating the probability.
 
 \subsubsection{Evaluation}
 
@@ -91,7 +94,7 @@ An example use of an N-gram model would be when you want to predict the next wor
 
 Minuscule probabilities are difficult to deal with due to limits on the number of significant digits in floating point point arithmetic. A way to solve this is to get the log of the probabilities. From there, a multiplication of probabilities becomes an addition of the log-probabilities.
 
-This can be used by N-gram models as a way to gauge similarity between text. If you train an N-gram model on a dataset and then "score" another dataset by adding the log-probabilities of every N-gram in the scoring dataset, you get the log-likelihood. The more negative the likelihood is, the more "surprised" your model is by the text. The log-likelihood can be calculated as follows for the bigram
+This can be used by N-gram models as a way to gauge similarity between text. If you train an N-gram model on a dataset and then "score" another dataset by adding the log-probabilities of every N-gram in the scoring dataset, you get the log-likelihood. The more negative the likelihood is, the more "surprised" your model is by the text. The log-likelihood can be calculated as follows for the bigram \todo{what is $N(v, w)$?}
 
 $$ \mathcal{L}\left(\mathcal{H}\right) = \sum\limits_{v, w \in V} N\left(v, w \right) \log P\left(w \vert v \right) $$
 
@@ -107,7 +110,7 @@ An example usage of this would be to train a model on email spam, and then calcu
 
 When tuning the amount of smoothing for a model, we often want to maximize the log-likelihood on a held-out dataset. This can be done using the derivative of the log-likelihood and gradient descent.
 
-The derivative of an additively smoothed bigram log-likelihood can be derived as follows
+The derivative of an additively smoothed bigram log-likelihood can be derived as follows \todo{this is a bit awkward, since you haven't introduced additive smoothing yet. I'd suggest just keeping the first equation, and maybe moving 2-4 to an appendix}
 
 \begin{align}
 P\left(\mathcal{H}\right) &= \sum\limits_{v, w \in V} N\left(v, w\right) \log P^*\left(w \vert v\right) \\
@@ -134,7 +137,7 @@ x & \text{else}
 
 Simple N-gram models work as described above, but they can be greatly improved. Higher-order models especially suffer from over-fitting where they become too specialized to the dataset they were trained on, generalizing poorly. Data is often very sparse with many singletons (types that only occur once) and very few words that occur many times.
 
-This problem of data sparsity can be seen in the following graph
+This problem of data sparsity can be seen in the following graph \todo{explain more about this graph: what is the x-axis, what is the y-axis?}
 
 \includegraphics[width=218px]{graphs/x-ton.png}
 
@@ -169,15 +172,15 @@ P\left( w \vert v \right) = \lambda \frac{c \left(v, w\right)}{c \left(v\right)}
 
 The values for $\lambda$, $\mu$, and $\theta$ can be varied to maximize the generalization of the model.
 
-The reason that interpolation is useful is it averages multiple models that are all able to partially explain the generative story of the text.
+The reason that interpolation is useful is it averages multiple models that are all able to partially explain the generative story of the text. \todo{add a footnote citation saying that this example is either due to p.c. (personal correspondence) w/ me, or just cite the github page}
 
-For example, say there are two probability distributions, $\mathcal{F} = N\left(-3, 1\right)$ and $\mathcal{G} = N\left(3, 1 \right)$, both normal distributions but with different means. There is also a weighted coin that has a $0.3$ chance of landing heads up (Bernoulli(.7)). Let $X$ be equal to 2000 data points drawn from the hierarchal model $\mathcal{H}$. For each point, flip the coin and if it's heads, draw a point from $\mathcal{F}$, otherwise draw a point from $\mathcal{G}$
+For example, say there are two probability distributions, $\mathcal{F} = N\left(-3, 1\right)$ and $\mathcal{G} = N\left(3, 1 \right)$, both normal distributions but with different means. \todo{switch this sentence and the next} There is also a weighted coin that has a $0.3$ chance of landing heads up (Bernoulli(.7)). Let $X$ be equal to 2000 data points drawn from the hierarchal model $\mathcal{H}$. For each point, flip the coin and if it's heads, draw a point from $\mathcal{F}$, otherwise draw a point from $\mathcal{G}$
 
 This produces the following histogram
 
 \includegraphics[width=218px]{graphs/hist.png}
 
-The normalized log-likelihood of $X$ scored with model $\mathcal{F}$ and $\mathcal{G}$ equals
+The normalized log-likelihood of $X$ scored with model $\mathcal{F}$ and $\mathcal{G}$ equals \todo{I'd remove the formulae here: put the scores inline}
 
 \begin{align*}
 &\mathcal{F}_{score}\left(X\right) = \\
@@ -193,7 +196,7 @@ However, when you score the data with the interpolated model you get
 &\approx -2
 \end{align*}
 
-which is significantly lower. Interpolating multiple N-gram models works in a similar manner to lower normalized log-likelihoods by better describing the generative story of the text.
+which is significantly \todo{higher, not lower} lower. Interpolating multiple N-gram models works in a similar manner to lower normalized log-likelihoods by better describing the generative story of the text.
 
 \paragraph{Maximum Likelihood Estimator}
 
@@ -203,7 +206,7 @@ When a model is unsmoothed, it is the maximum likelihood estimator (MLE) as it w
 
 \paragraph{NLP Distributions and Properties}
 
-Language models have several constraints. The largest of these is that language must be valid probability distributions, with all probabilities between 0 and 1 and summing to 1.
+\todo{I think this paragraph can be cut (commented out). You've covered this info at various other points} Language models have several constraints. The largest of these is that language must be valid probability distributions, with all probabilities between 0 and 1 and summing to 1.
 
 \setcounter{equation}{0}
 
@@ -271,14 +274,14 @@ H\left(p,q\right) &= E_p\left[-\log q\right] \\
 \section{Methods \& Results}
 \subsection{Python Implementation}
 
-My main accomplishment over the summer was an implementation of an N-gram model in python. The code for it can be found on Github at \\
+\todo{you can say this here, but this needs to be made clear very early on too} My main accomplishment over the summer was an implementation of an N-gram model in python. The code for it can be found on Github at \\
 {\tt https://github.com/empathetic-alligator/\\twitter-kov} \\
 
 One of the main outputs of the code is graphs like the following
 
 \includegraphics[width=250px]{graphs/loglikelihood.png}
 
-Here the relationship between the amount of additive smoothing on a model and it's normalized log-likelihood can be seen.
+Here the relationship between the amount of additive smoothing on a model and it's normalized log-likelihood can be seen. \todo{explain what's happening here; what's the straight line; what do the different lines mean; what data did you use (how many tweets, how many tokens)?}
 
 \subsection{Performance Comparisons}
 
@@ -300,13 +303,15 @@ Here the relationship between the amount of additive smoothing on a model and it
 \appendix
 \section{Additive Smoothing as a Linear Interpolation}
 
+\todo{Describe what you're doing here, even as a sentence or two}
+
 \begin{align}
 P^*\left(w \vert v \right) &= \frac{c^*\left(v, w\right)}{\sum\limits_{w^` \in V} c^*\left(v, w \right)} \\
 &= \frac{c \left( v, w \right) + \theta}{\sum\limits_{w^` \in V} \left( c\left( v, w \right) + \alpha \right)} \\
 &= \frac{c \left( v, w \right) + \alpha}{c \left( v \right) + V\alpha} \\
 &= \frac{c\left(v, w\right)}{c\left( v \right) + V\alpha} + \frac{\alpha}{c\left( v \right) + V\alpha} \\
 &= \frac{c\left( v\right)}{c\left( v\right) + V\alpha} \frac{c\left(v, w\right)}{c\left( v \right)} + \frac{1}{V} \frac{V\alpha}{c\left( v \right) + V\alpha} \\
-&= \frac{c\left( v\right)}{c\left( v\right) + V\alpha} \frac{c\left(v, w\right)}{c\left( v \right)} + \left( 1 - \frac{c\left( v\right)}{c\left( v\right) + V\alpha} \right) \frac{1}{V} \\
+&= \frac{c\left( v\right)}{c\left( v\right) + V\alpha} \frac{c\left(v, w\right)}{c\left( v \right)} + \\ & \left( 1 - \frac{c\left( v\right)}{c\left( v\right) + V\alpha} \right) \frac{1}{V} \\
 &= \lambda \frac{c\left(v, w\right)}{c\left( v \right)} + \left(1-\lambda\right) \frac{1}{V}
 \end{align}
 
